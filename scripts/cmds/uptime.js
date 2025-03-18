@@ -1,12 +1,14 @@
- const os = require('os');
+const os = require('os');
 const moment = require('moment-timezone');
+const { createCanvas } = require('canvas');
+const fs = require('fs');
 
 module.exports = {
     config: {
         name: "uptime",
         aliases: ["upt", "up"],
         version: "1.0",
-        author: "ミ★𝐒𝐎𝐍𝐈𝐂✄𝐄𝐗𝐄 3.0★彡", // don't change credits
+        author: "ミ★𝐒𝐎𝐍𝐈𝐂✄𝐄𝐗𝐄 3.0★彡",
         role: 0,
         shortDescription: {
             en: "Displays bot uptime, system information, and current time in Cameroon."
@@ -30,7 +32,7 @@ module.exports = {
             const botMinutes = Math.floor((botUptime % 3600) / 60);
             const botSeconds = Math.floor(botUptime % 60);
 
-            const botUptimeString = `\n│🎶✨${botDays} 𝐝𝐚𝐲𝐬✨🎶\n│🎶✨${botHours} 𝐡𝐨𝐮𝐫𝐬✨🎶\n│🎶✨${botMinutes} 𝐦𝐢𝐧𝐮𝐭𝐞𝐬✨🎶\n│🎶✨${botSeconds} 𝐬𝐞𝐜𝐨𝐧𝐝𝐬✨🎶`;
+            const botUptimeString = `${botDays} days, ${botHours} hours, ${botMinutes} minutes, ${botSeconds} seconds`;
 
             // Format server uptime
             const serverDays = Math.floor(serverUptime / 86400);
@@ -38,31 +40,59 @@ module.exports = {
             const serverMinutes = Math.floor((serverUptime % 3600) / 60);
             const serverSeconds = Math.floor(serverUptime % 60);
 
-            const serverUptimeString = `│🔰✨${serverDays} 𝐝𝐚𝐲𝐬✨🔰\n│🔰✨${serverHours} 𝐡𝐨𝐮𝐫𝐬✨🔰\n│🔰✨${serverMinutes} 𝐦𝐢𝐧𝐮𝐭𝐞𝐬✨🔰\n│🔰✨${serverSeconds} 𝐬𝐞𝐜𝐨𝐧𝐝𝐬✨🔰`;
+            const serverUptimeString = `${serverDays} days, ${serverHours} hours, ${serverMinutes} minutes, ${serverSeconds} seconds`;
 
             const totalMem = os.totalmem() / (1024 * 1024 * 1024);
             const freeMem = os.freemem() / (1024 * 1024 * 1024);
             const usedMem = totalMem - freeMem;
             const speed = os.cpus()[0].speed;
 
-            const totalStorage = os.totalmem() / (1024 * 1024 * 1024);
-            const usedStorage = usedMem;
-
-            const systemStatus = "🟢| 𝐆𝐨𝐨𝐝 𝐒𝐲𝐬𝐭𝐞𝐦";
+            const systemStatus = "🟢 Good System";
 
             // Set timezone to Cameroon (Africa/Douala)
             const cameroonTimezone = 'Africa/Douala';
             const now = moment().tz(cameroonTimezone);
-            const currentTime = now.format('【YYYY-MM-DD】  〖HH:mm:ss〗');
+            const currentTime = now.format('YYYY-MM-DD HH:mm:ss');
 
-            api.sendMessage(`╭─⌾🌿𝗛𝗘𝗗𝗚𝗘𝗛𝗢𝗚🌿\n│𝐍𝐚𝐦𝐞:➣ ✘.𝚂𝙾𝙽𝙸𝙲〈 な\n│𝐏𝐫𝐞𝐟𝐢𝐱 𝐒𝐲𝐬𝐭𝐞𝐦: ${prefix}\n│𝐎𝐰𝐧𝐞𝐫:ミ𝐒𝐎𝐍𝐈𝐂✄𝐄𝐗𝐄彡\n╰─────────⌾\n╭─⌾⏰𝗕𝗢𝗧 𝗨𝗣𝗧𝗜𝗠𝗘⏰ ${botUptimeString}\n╰─────────⌾\n╭─⌾⏰𝗦𝗘𝗥𝗩𝗘𝗥 𝗨𝗣𝗧𝗜𝗠𝗘⏰\n${serverUptimeString}\n╰─────────⌾\n╭─⌾🟢𝗖𝗔𝗣𝗔𝗖𝗜𝗧𝗬🟢\n│𝐒𝐩𝐞𝐞𝐝📶: ${speed} ko/s\n│𝐒𝐭𝐨𝐜𝐤𝐚𝐠𝐞💽: ${usedStorage.toFixed(2)}/${totalStorage.toFixed(2)} GB\n│𝐑𝐀𝐌💾: ${usedMem.toFixed(2)}/${totalMem.toFixed(2)} GB\n│${systemStatus}\n╰────────⌾\n╭─⌾📅🕰️ 𝐓𝐢𝐦𝐞 🕰️📅\n│${currentTime}\n╰─────────⌾`, event.threadID);
+            // Create an image with the information
+            const canvas = createCanvas(800, 600);
+            const ctx = canvas.getContext('2d');
+
+            // Draw background with fluorescent color
+            ctx.fillStyle = '#0f0f0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw text with fluorescent colors
+            const textColors = ['#00ff00', '#ff00ff', '#00ffff', '#ffff00'];
+            const texts = [
+                `Bot Uptime: ${botUptimeString}`,
+                `Server Uptime: ${serverUptimeString}`,
+                `CPU Speed: ${speed} MHz`,
+                `Memory Usage: Used: ${usedMem.toFixed(2)} GB / Total: ${totalMem.toFixed(2)} GB`,
+                `Current Time in Cameroon: ${currentTime}`,
+                systemStatus
+            ];
+
+            ctx.font = '30px Arial';
+            texts.forEach((text, index) => {
+                ctx.fillStyle = textColors[index % textColors.length];
+                ctx.fillText(text, 50, 50 + index * 50);
+            });
+
+            // Save the image
+            const buffer = canvas.toBuffer('image/png');
+            const imagePath = './uptime.png';
+            fs.writeFileSync(imagePath, buffer);
+
+            // Send the image
+            api.sendMessage({ body: 'Here is the uptime information:', attachment: fs.createReadStream(imagePath) }, event.threadID);
 
         } catch (error) {
             console.error(error);
-            api.sendMessage(`🔴| 𝐁𝐚𝐝 𝐒𝐲𝐬𝐭𝐞𝐦: An error occurred while retrieving data. ${error.message}`, event.threadID);
+            api.sendMessage(`🔴 Bad System: An error occurred while retrieving data. ${error.message}`, event.threadID);
 
             if (module.exports.config.author !== "ミ★𝐒𝐎𝐍𝐈𝐂✄𝐄𝐗𝐄 3.0★彡") {
-                return api.sendMessage("❌| 𝐓𝐚𝐧𝐭 𝐪𝐮𝐞 𝐯𝐨𝐮𝐬 𝐧'𝐚𝐮𝐫𝐞𝐳 𝐩𝐚𝐬 𝐫𝐞𝐦𝐢𝐬 𝐥𝐞 𝐧𝐨𝐦 𝐝𝐮 𝐜𝐫𝐞𝐚𝐭𝐞𝐮𝐫 𝐝𝐞 𝐜𝐞𝐭𝐭𝐞 𝐜𝐨𝐦𝐦𝐚𝐧𝐝𝐞...𝐜𝐞𝐥𝐥𝐞-𝐜𝐢 𝐜𝐞𝐬𝐬𝐞𝐫𝐚 𝐝𝐞 𝐟𝐨𝐧𝐜𝐭𝐢𝐨𝐧𝐧𝐞𝐫 !🛠️⚙️", event.threadID);
+                return api.sendMessage("❌ Tant que vous n'aurez pas remis le nom du créateur de cette commande... celle-ci cessera de fonctionner !🛠️⚙️", event.threadID);
             }
         }
     }
