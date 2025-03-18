@@ -4,7 +4,7 @@ const moment = require('moment-timezone');
 module.exports = {
     config: {
         name: "uptime2",
-        aliases: ["upt", "up2"],
+        aliases: ["upt2", "up2"],
         version: "1.0",
         author: "ミ★𝐒𝐎𝐍𝐈𝐂✄𝐄𝐗𝐄 3.0★彡",
         role: 0,
